@@ -23,7 +23,6 @@ Stitch projesi: https://stitch.withgoogle.com/projects/10280267099388934499
 - React/Vite mobil uyumlu prototip ve Express tutor API: `npm install`, ardından `npm run dev`. Gemini anahtarı isteğe bağlıdır; anahtar yoksa veya Gemini kotası/bağlantısı kullanılamıyorsa API karar konusuna uygun çevrimdışı yedek tutor ipucu verir.
 - Tutor değerlendirmesi: [20 sentetik yanıt ve etiketleme yönergesi](eval/README.md), [yedek tutor değerlendirme raporu](eval/tutor-evaluation.md); API yanıtlarını `npm run eval:tutor` ile üretin.
 - Cypress E2E: `npm run test:e2e` ile 8 karar yolunu, tutor/yedek tutor, ipucu, 60 saniyelik sayacı ve yeniden başlatmayı kapsar (12 test).
-- Demo videoları: [Uygulama demosu (43 saniye)](demo/se-primer-demo.mp4) · [Cypress E2E kayıt videosu (10,8 saniye)](demo/se-primer-e2e.mp4).
 - Google AI Studio uygulaması: [SE Primer](https://aistudio.google.com/apps/d0ee75f8-fc12-4804-be2c-4e630190cfec) (bağlantıya sahip herkes görüntüleyebilir).
 - AI Studio önizlemesinde 429 kota aşımında güvenli yedek ipucu gösterimi doğrulandı. Yerel Express tutor API'si de anahtar yokluğu, kota/hizmet hatası ve zaman aşımında karar konusuna uygun yedek ipucuna döner; Gemini yanıtları ayrıca kaynak etiketiyle raporlanır.
 
