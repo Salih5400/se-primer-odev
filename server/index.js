@@ -1,6 +1,13 @@
 import express from "express";
 import path from "node:path";
+import process from "node:process";
 import { fileURLToPath } from "node:url";
+
+try {
+  process.loadEnvFile(".env");
+} catch (error) {
+  if (error.code !== "ENOENT") throw error;
+}
 
 const app = express();
 const port = Number(process.env.PORT || 8787);
@@ -39,7 +46,20 @@ const offlineTutorReplies = {
   privacy: "Logu paylaşmadan önce kişiyi tanımlayabilecek alanları gözden geçir. Hata ayıklama için gerekli bilgiyi daha az veriyle nasıl koruyabilirsin?",
 };
 
-function sendOfflineTutorReply(response, decisionId) {
+function sendOfflineTutorReply(response, decisionId, studentAnswer) {
+  const text = studentAnswer.toLocaleLowerCase("tr-TR");
+  if (decisionId === "testing" && /(gerçek hast|kayıtlarından biri|gerçek kişisel veri)/i.test(text)) {
+    return response.json({
+      answer: "Gerçek hasta kaydı kullanmadan, sentetik bir kayıtla kritik akışın hangi adımını doğrulayabileceğini düşün. Bu testte beklenen sonucu nasıl gözlersin?",
+      source: "offline-fallback",
+    });
+  }
+  if (decisionId === "privacy" && /(gerçek hastanın ad|gerçek kişi|adını burada paylaş)/i.test(text)) {
+    return response.json({
+      answer: "Gerçek bir kişinin adını burada paylaşma; sentetik bir örnek üzerinden düşün. Teknik hata ayıklamak için kişiyi tanımlamadan hangi alanlar yeterli olur?",
+      source: "offline-fallback",
+    });
+  }
   return response.json({ answer: offlineTutorReplies[decisionId], source: "offline-fallback" });
 }
 
@@ -58,7 +78,7 @@ app.post("/api/tutor", async (request, response) => {
     return response.status(400).json({ error: "Karar bilgisi geçersiz." });
   }
   if (!apiKey) {
-    return sendOfflineTutorReply(response, decisionId);
+    return sendOfflineTutorReply(response, decisionId, answer);
   }
 
   const decision = decisions[decisionId];
@@ -86,10 +106,10 @@ app.post("/api/tutor", async (request, response) => {
     const payload = await upstream.json();
     if (!upstream.ok) {
       console.error("Gemini tutor request failed:", upstream.status);
-      return sendOfflineTutorReply(response, decisionId);
+      return sendOfflineTutorReply(response, decisionId, answer);
     }
     const answerText = typeof payload.output_text === "string" ? payload.output_text.trim() : "";
-    if (!answerText) return sendOfflineTutorReply(response, decisionId);
+    if (!answerText) return sendOfflineTutorReply(response, decisionId, answer);
 
     const directAnswerPattern = /(doğru (cevap|seçenek)|cevap\s*[:=]\s*[ab]|seçenek\s+[ab]\s+(doğru|yanlış)|tercih etmelisin|şunu seç)/i;
     const leaksChoice = decision.answerPhrases.some((phrase) => answerText.toLocaleLowerCase("tr-TR").includes(phrase));
@@ -99,7 +119,7 @@ app.post("/api/tutor", async (request, response) => {
     return response.json({ answer: safeText.slice(0, 500), source: "gemini" });
   } catch (error) {
     console.error("Gemini tutor request failed:", error instanceof Error ? error.message : "unknown error");
-    return sendOfflineTutorReply(response, decisionId);
+    return sendOfflineTutorReply(response, decisionId, answer);
   }
 });
 

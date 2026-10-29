@@ -1,6 +1,7 @@
 import { defineConfig } from "cypress";
 
 export default defineConfig({
+  allowCypressEnv: false,
   video: true,
   videoCompression: 32,
   screenshotOnRunFailure: true,

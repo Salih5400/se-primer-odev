@@ -49,6 +49,20 @@ describe("SE Primer karar yolları", () => {
     cy.get('[data-cy="tutor-reply"]').should("not.contain.text", "Doğru cevap");
   });
 
+  it("çevrimdışı yedek tutor yanıtını etiketler", () => {
+    cy.intercept("POST", "/api/tutor", {
+      statusCode: 200,
+      body: { answer: "Logu paylaşmadan önce kişiyi tanımlayabilecek alanları gözden geçir.", source: "offline-fallback" },
+    }).as("offlineTutor");
+    start();
+    cy.get('[data-cy="tutor-toggle"]').click();
+    cy.get('[data-cy="tutor-input"]').type("Logu nasıl güvenli paylaşabilirim?");
+    cy.get('[data-cy="tutor-send"]').click();
+    cy.wait("@offlineTutor");
+    cy.get('[data-cy="tutor-reply"]').should("contain.text", "Çevrimdışı yedek ipucu");
+    cy.get('[data-cy="tutor-reply"]').should("contain.text", "kişiyi tanımlayabilecek alanları");
+  });
+
   it("deneyimli modda 60 saniye sonunda her kararda güvenli varsayılanı seçer", () => {
     cy.clock();
     cy.visit("/");
