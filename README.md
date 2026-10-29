@@ -21,7 +21,7 @@ Stitch projesi: https://stitch.withgoogle.com/projects/10280267099388934499
 - React/Vite mobil uyumlu prototip ve Express tutor API: `npm install`, ardından `npm run dev`
 - Tutor değerlendirmesi: [20 sentetik yanıt ve etiketleme yönergesi](eval/README.md); API yanıtlarını `npm run eval:tutor` ile üretin.
 - Cypress E2E: `npm run test:e2e` ile 8 karar yolunu, ipucu/tutor ve 60 saniyelik sayacı kapsar.
-- Google AI Studio uygulaması: [SE Primer](https://aistudio.google.com/apps/d0ee75f8-fc12-4804-be2c-4e630190cfec) (şu an yalnızca sahibi görebilir; öğretim görevlisinin açabilmesi için paylaşım erişimi gerekir).
+- Google AI Studio uygulaması: [SE Primer](https://aistudio.google.com/apps/d0ee75f8-fc12-4804-be2c-4e630190cfec) (bağlantıya sahip herkes görüntüleyebilir).
 - 60 saniyelik demo: henüz kaydedilmedi.
 
 ## Doğrulama durumu
