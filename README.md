@@ -24,11 +24,13 @@ Stitch projesi: https://stitch.withgoogle.com/projects/10280267099388934499
 - Tutor değerlendirmesi: [20 sentetik yanıt ve etiketleme yönergesi](eval/README.md); API yanıtlarını `npm run eval:tutor` ile üretin.
 - Cypress E2E: `npm run test:e2e` ile 8 karar yolunu, ipucu/tutor ve 60 saniyelik sayacı kapsar.
 - Google AI Studio uygulaması: [SE Primer](https://aistudio.google.com/apps/d0ee75f8-fc12-4804-be2c-4e630190cfec) (bağlantıya sahip herkes görüntüleyebilir).
+- AI Studio önizlemesi derleniyor. Tutor isteği 429 kota aşımında 0,24 sn içinde güvenli, tarafsız yedek ipucuna dönüyor; Gemini'den gerçek yanıt henüz doğrulanamadı.
 - 60 saniyelik demo: henüz kaydedilmedi.
 
 ## Doğrulama durumu
 
 - Sunucu ve eval betiği Node.js sözdizimi kontrolünden geçti; 20 eval girdisi JSON olarak doğrulandı.
+- AI Studio'da sentetik tutor sorusu gönderildi; Gemini `429 RESOURCE_EXHAUSTED` döndürdü, arayüz yedek yanıtı gösterdi ve yükleme durumu kapandı. 20 model yanıtı değerlendirmesi henüz yapılmadı.
 - `npm install`, `registry.npmjs.org` DNS çözümlemesi başarısız olduğu için tamamlanamadı. Derleme ve Cypress E2E henüz çalıştırılamadı; ağ erişimi olan ortamda `npm install` ardından `npm run build` ve `npm run test:e2e` çalıştırın.
 
 ## Ürün kararları
