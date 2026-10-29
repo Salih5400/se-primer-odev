@@ -101,6 +101,8 @@ h1 { margin-bottom: 7px; font-family: Manrope, 'DM Sans', sans-serif; font-size:
 .tutor-input-row button:disabled { opacity: .55; cursor: wait; }
 .tutor-privacy-note { margin: 7px 0 0; color: var(--muted); font-size: 10px; }
 .tutor-reply { margin: 10px 0 0; padding: 10px; border-radius: 10px; background: var(--primary-soft); color: #234e44; font-size: 12px; line-height: 1.5; }
+.tutor-reply p { margin: 0; }
+.tutor-source { display: block; margin-bottom: 4px; color: var(--muted); font-size: 10px; font-weight: 700; }
 .tutor-reply.is-error { background: #f3f1ec; color: #5c5547; }
 
 .outcome-badge { padding: 5px 8px; border-radius: 7px; background: var(--primary-soft); color: var(--primary); font-size: 10px; font-weight: 700; }

@@ -126,6 +126,7 @@ function App() {
   const [tutorOpen, setTutorOpen] = useState(false);
   const [tutorText, setTutorText] = useState("");
   const [tutorReply, setTutorReply] = useState("");
+  const [tutorSource, setTutorSource] = useState("");
   const [tutorStatus, setTutorStatus] = useState("idle");
   const decision = decisions[currentStep];
 
@@ -187,6 +188,7 @@ function App() {
     setTutorOpen(false);
     setTutorText("");
     setTutorReply("");
+    setTutorSource("");
     setTutorStatus("idle");
     setSafeEnding(true);
     setScreen("entry");
@@ -198,6 +200,7 @@ function App() {
     if (!message || tutorStatus === "loading") return;
     setTutorStatus("loading");
     setTutorReply("");
+    setTutorSource("");
     try {
       const response = await fetch("/api/tutor", {
         method: "POST",
@@ -211,6 +214,7 @@ function App() {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Tutor şu an yanıt veremiyor.");
       setTutorReply(payload.answer);
+      setTutorSource(payload.source || "");
       setTutorStatus("done");
     } catch (error) {
       setTutorReply(error.message === "Failed to fetch"
@@ -347,7 +351,10 @@ function App() {
                 </button>
               </div>
               <p className="tutor-privacy-note">Gerçek hasta verisi veya kişisel bilgi yazma.</p>
-              {tutorReply && <p className={`tutor-reply ${tutorStatus === "error" ? "is-error" : ""}`} role="status" data-cy="tutor-reply">{tutorReply}</p>}
+              {tutorReply && <div className={`tutor-reply ${tutorStatus === "error" ? "is-error" : ""}`} role="status" data-cy="tutor-reply">
+                {tutorSource === "offline-fallback" && <span className="tutor-source">Çevrimdışı yedek ipucu</span>}
+                <p>{tutorReply}</p>
+              </div>}
             </form>
           )}
           <p className="scene-footnote">{profile.level === "experienced" ? `Deneyimli modunda ${secondsRemaining} sn sayaç aktif` : "İstersen kararlarında ipucu alabilirsin"}</p>

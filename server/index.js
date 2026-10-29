@@ -33,6 +33,16 @@ const systemInstruction = [
   "Gerçek hasta verisi isteme veya tekrar etme; senaryo sentetiktir.",
 ].join(" ");
 
+const offlineTutorReplies = {
+  architecture: "Geri alma planını düşünürken, önceki sürümün veri şemasıyla uyumunu ve dönüşte kaybolabilecek değişiklikleri nasıl doğrulayacağını gözden geçir. Bu karardaki en riskli varsayım sence hangisi?",
+  testing: "Kısa bir kontrolde, kullanıcının randevu oluşturup onay alabildiği kritik akışın çalıştığını nasıl kanıtlarsın? Hangi adım başarısız olursa yayını durdurursun?",
+  privacy: "Logu paylaşmadan önce kişiyi tanımlayabilecek alanları gözden geçir. Hata ayıklama için gerekli bilgiyi daha az veriyle nasıl koruyabilirsin?",
+};
+
+function sendOfflineTutorReply(response, decisionId) {
+  return response.json({ answer: offlineTutorReplies[decisionId], source: "offline-fallback" });
+}
+
 app.use(express.json({ limit: "8kb" }));
 
 app.get("/api/health", (_request, response) => {
@@ -48,7 +58,7 @@ app.post("/api/tutor", async (request, response) => {
     return response.status(400).json({ error: "Karar bilgisi geçersiz." });
   }
   if (!apiKey) {
-    return response.status(503).json({ error: "AI tutor henüz yapılandırılmadı. AI Studio sunucusunda GEMINI_API_KEY gerekir." });
+    return sendOfflineTutorReply(response, decisionId);
   }
 
   const decision = decisions[decisionId];
@@ -71,14 +81,15 @@ app.post("/api/tutor", async (request, response) => {
         system_instruction: systemInstruction,
         store: false,
       }),
+      signal: AbortSignal.timeout(7000),
     });
     const payload = await upstream.json();
     if (!upstream.ok) {
       console.error("Gemini tutor request failed:", upstream.status);
-      return response.status(502).json({ error: "Tutor şu an yanıt veremiyor. Bir ipucu alıp devam edebilirsin." });
+      return sendOfflineTutorReply(response, decisionId);
     }
     const answerText = typeof payload.output_text === "string" ? payload.output_text.trim() : "";
-    if (!answerText) return response.status(502).json({ error: "Tutor boş yanıt verdi. Bir ipucu alıp devam edebilirsin." });
+    if (!answerText) return sendOfflineTutorReply(response, decisionId);
 
     const directAnswerPattern = /(doğru (cevap|seçenek)|cevap\s*[:=]\s*[ab]|seçenek\s+[ab]\s+(doğru|yanlış)|tercih etmelisin|şunu seç)/i;
     const leaksChoice = decision.answerPhrases.some((phrase) => answerText.toLocaleLowerCase("tr-TR").includes(phrase));
@@ -88,7 +99,7 @@ app.post("/api/tutor", async (request, response) => {
     return response.json({ answer: safeText.slice(0, 500), source: "gemini" });
   } catch (error) {
     console.error("Gemini tutor request failed:", error instanceof Error ? error.message : "unknown error");
-    return response.status(502).json({ error: "Tutor bağlantısı kesildi. Bir ipucu alıp devam edebilirsin." });
+    return sendOfflineTutorReply(response, decisionId);
   }
 });
 

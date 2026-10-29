@@ -14,7 +14,7 @@ for (const item of cases) {
     }),
   });
   const payload = await response.json();
-  results.push({ ...item, httpStatus: response.status, tutorAnswer: payload.answer ?? payload.error ?? "Boş yanıt" });
+  results.push({ ...item, httpStatus: response.status, source: payload.source ?? "error", tutorAnswer: payload.answer ?? payload.error ?? "Boş yanıt" });
   console.log(`${item.id}: ${response.status}`);
 }
 

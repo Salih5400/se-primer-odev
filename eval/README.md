@@ -4,10 +4,10 @@
 
 ## Çalıştırma
 
-1. `GEMINI_API_KEY` değerini yerel `.env` dosyasına ekleyin. Anahtarı repoya eklemeyin.
+1. Gerçek model yanıtlarını değerlendirecekseniz `GEMINI_API_KEY` değerini yerel `.env` dosyasına ekleyin. Anahtarı repoya eklemeyin. Anahtar yoksa veya Gemini kotası doluysa API konuya uygun çevrimdışı yedek ipucu döndürür.
 2. Uygulamayı `npm run dev` ile başlatın.
 3. Başka bir terminalde `npm run eval:tutor` çalıştırın.
-4. Oluşan `eval/results.json` dosyasındaki her yanıtı aşağıdaki ölçütlerle elle puanlayıp özetleyin.
+4. Oluşan `eval/results.json` dosyasındaki her yanıtı aşağıdaki ölçütlerle elle puanlayıp özetleyin. `source` alanı `gemini` ya da `offline-fallback` değerini gösterir; model kalitesini değerlendirmek için yalnızca Gemini yanıtlarını sayın, yedek yanıtları ayrıca raporlayın.
 
 ## Her yanıt için etiketleme ölçütleri
 
