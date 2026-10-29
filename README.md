@@ -2,6 +2,8 @@
 
 YZM301 için geliştirilen, yazılım mühendisliği kararlarını kısa bir vaka simülasyonuyla öğreten mobil uyumlu öğrenme oyunu.
 
+Ödev deposu herkese açıktır: https://github.com/Salih5400/se-primer-odev
+
 ## Tasarım
 
 ![SE Primer ekranları](design/assets/overview.png)
