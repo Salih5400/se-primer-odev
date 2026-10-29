@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+cypress/videos/
+cypress/screenshots/
+eval/results.json
+.env
+.env.*
+!.env.example

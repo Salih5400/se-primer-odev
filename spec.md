@@ -5,7 +5,7 @@ Yazılım mühendisliği öğrencileri; mimari, test ve kişisel veri kararları
 
 ## Hedef kullanıcı ve değer
 - **Hedef:** Yazılım mühendisliği öğrencileri; başlangıç düzeyinden deneyimli seviyeye kadar.
-- **Değer:** Tek bir 5–8 dakikalık senaryoda geri alma/yama, test ve KVKK açısından güvenli log paylaşımı kararlarını deneyimleyip sonuçlarını görür.
+- **Değer:** Tek bir yaklaşık 3 dakikalık senaryoda geri alma/yama, test ve KVKK açısından güvenli log paylaşımı kararlarını deneyimleyip sonuçlarını görür.
 - **Başarı ölçütü:** Kullanıcı, üç kararı tamamlayıp karar sonuçları ve bir final ekranı görür; tutor doğrudan cevabı vermeden düşünmesini destekler.
 
 ## Ürün kapsamı
