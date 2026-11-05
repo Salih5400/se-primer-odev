@@ -26,12 +26,21 @@ Canlı veri toplama sayfası: https://salih5400.github.io/se-primer-odev/?collec
 
 - Yerelde `npm install` ve `npm run dev` çalıştırın; sonra `http://localhost:5173/?collect=1` adresini açın. GitHub Pages dağıtımı açıldığında aynı modu canlı linkin sonuna `?collect=1` ekleyerek kullanabilirsiniz.
 - Üç farklı katılımcı beşer oturum oynasın. Her oturumda rıza kutusunu işaretlesin; uygulama her sahnede oyuncunun seçtiği güvenli/riskli seçeneği otomatik kaydeder. Katılımcılar farklı cihaz kullanırsa final ekranında her cihazdan CSV dışa aktarın ve dosyaları birleştirin.
+- Katılımcıdan isim, e-posta veya başka tanımlayıcı istemeyin. Her kişi aynı cihaz/tarayıcıda beş tam oturumu bitirip son oturumda CSV'yi dışa aktarsın; oturumlar arası localStorage silinirse her oturum sonunda ayrı CSV alın.
 - Finalde **CSV dışa aktar** düğmesini kullanın. Gerçek katılımcı CSV satırlarını `data/oturumlar.csv` başlığıyla birleştirin. Cypress testlerindeki `kaynak=sentetik` satırları eğitime girmez.
 - Uygulama ad, e-posta, cihaz kimliği, IP, konum veya serbest metin toplamaz. Oturumlar rastgele kimlikle ilişkilendirilir ve yalnızca tarayıcıda tutulur.
 
 Model hedefi, özellik sırası ve eğitimden önce sabitlenen kabul eşikleri [spec.md](spec.md)'de; CSV sütunlarının tanımı [data/SOZLUK.md](data/SOZLUK.md)'dedir.
 
 ### ML eğitimi
+
+Windows'ta kurulum ve eğitim için üç komut:
+
+```powershell
+& 'C:\ProgramData\anaconda3\python.exe' -m venv .venv
+& '.\.venv\Scripts\python.exe' -m pip install -r requirements-ml.txt
+& '.\.venv\Scripts\python.exe' train.py
+```
 
 Eğitim eval kapısını geçerse HF hesabında oturum açıp `HF_REPO_ID=kullanici/model-adi` ayarla, ardından `python publish_model.py` çalıştır. Script public modele yükler ve web manifestini tam commit SHA'larına sabitler. Token'ı repoya veya sohbete ekleme; manifesti ve HF commit kaydını GitHub'a gönderdikten sonra Pages deployment ve Cypress'i doğrula.
 
