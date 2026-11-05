@@ -1,0 +1,7 @@
+{
+  "enabled": false,
+  "reason": "Awaiting consented real-session training and Hugging Face release.",
+  "revision": null,
+  "model_url": null,
+  "config_url": null
+}

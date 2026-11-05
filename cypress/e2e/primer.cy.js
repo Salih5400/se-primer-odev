@@ -21,6 +21,13 @@ function start() {
   cy.get('[data-cy="start-game"]').click();
 }
 
+function completeCollectedDecision(index, needsHint) {
+  cy.get(`[data-cy="decision-option-${index}"]`).click();
+  cy.get('[data-cy="need-hint-survey"]').should("be.visible");
+  cy.get(`[data-cy="need-hint-${needsHint ? "yes" : "no"}"]`).click();
+  cy.get('[data-cy="next-step"]').should("not.be.disabled").click();
+}
+
 describe("SE Primer karar yolları", () => {
   paths.forEach((path) => {
     it(`üç kararı tamamlar: ${path.name}`, () => {
@@ -61,6 +68,61 @@ describe("SE Primer karar yolları", () => {
     cy.wait("@offlineTutor");
     cy.get('[data-cy="tutor-reply"]').should("contain.text", "Çevrimdışı yedek ipucu");
     cy.get('[data-cy="tutor-reply"]').should("contain.text", "kişiyi tanımlayabilecek alanları");
+  });
+
+  it("veri toplama modunda rıza yoksa oturum kaydetmez", () => {
+    cy.visit("/?collect=1&source=sentetik");
+    cy.window().then((win) => win.localStorage.clear());
+    cy.reload();
+    cy.get('[data-cy="collection-consent"]').should("be.visible");
+    cy.get('[data-cy="collection-opt-in"]').should("not.be.checked");
+    cy.get('[data-cy="start-game"]').click();
+    cy.get('[data-cy="decision-option-0"]').click();
+    cy.get('[data-cy="need-hint-survey"]').should("not.exist");
+    cy.get('[data-cy="next-step"]').click();
+    cy.window().then((win) => expect(win.localStorage.getItem("se-primer-v2-anonymous-decisions")).to.equal(null));
+  });
+
+  it("rıza ile üç kararın anonim davranış satırlarını dışa aktarılabilir tutar", () => {
+    cy.visit("/?collect=1&source=sentetik");
+    cy.window().then((win) => win.localStorage.clear());
+    cy.reload();
+    cy.get('[data-cy="collection-opt-in"]').check();
+    cy.get('[data-cy="start-game"]').click();
+    completeCollectedDecision(0, true);
+    completeCollectedDecision(1, false);
+    completeCollectedDecision(0, true);
+    cy.get('[data-cy="collection-export"]').should("contain.text", "3 anonim karar kaydı");
+    cy.get('[data-cy="export-csv"]').should("be.enabled");
+    cy.window().then((win) => {
+      const rows = JSON.parse(win.localStorage.getItem("se-primer-v2-anonymous-decisions"));
+      expect(rows).to.have.length(3);
+      expect(new Set(rows.map((row) => row.session_id)).size).to.equal(1);
+      expect(rows.map((row) => row.kaynak)).to.deep.equal(["sentetik", "sentetik", "sentetik"]);
+      expect(rows.every((row) => row.ipucu_ihtiyaci === 0 || row.ipucu_ihtiyaci === 1)).to.equal(true);
+      expect(Object.keys(rows[0])).not.to.include("ad");
+    });
+  });
+
+  it("beş referans girdide tarayıcı ONNX çıktısını Python Oracle ile karşılaştırır", () => {
+    cy.request("/tests/parite.json").then(({ body }) => {
+      if (body.cases.length === 0) {
+        cy.log("Model henüz eval kapısından geçmedi; parite koşusu model yayımlanınca etkinleşecek.");
+        return;
+      }
+      expect(body.cases).to.have.length(5);
+      cy.visit("/?parity=1");
+      body.cases.forEach((testCase) => {
+        cy.get(`[data-cy="parity-run-${testCase.id}"]`).click();
+        cy.get(`[data-cy="p-${testCase.id}"]`).should("be.visible").invoke("attr", "data-probabilities").then((actualText) => {
+          const actual = JSON.parse(actualText);
+          expect(actual).to.have.length(testCase.probabilities.length);
+          actual.forEach((probability, index) => {
+            expect(Math.abs(probability - testCase.probabilities[index])).to.be.lessThan(body.tolerance);
+          });
+        });
+      });
+    });
   });
 
   it("deneyimli modda 60 saniye sonunda her kararda güvenli varsayılanı seçer", () => {
