@@ -443,10 +443,10 @@ function App() {
           {collectionMode && (
             <section className="collection-consent" data-cy="collection-consent">
               <strong>Anonim veri toplama modu</strong>
-              <p>Katılmayı seçersen karar süresi, oyun içi davranış ve ipucu ihtiyacı yanıtların bu tarayıcıda saklanır. Ad, e-posta, cihaz kimliği veya konum alınmaz. İzin vermeden oynayabilirsin.</p>
+              <p>Katılmayı seçersen karar süresi, oyun içi davranış ve ipucu ihtiyacı yanıtların bu tarayıcıda saklanır. Ad, e-posta, cihaz kimliği veya konum alınmaz. Dışa aktarılan anonim kayıtlar ödevin herkese açık GitHub deposunda yayımlanır ve başkaları tarafından indirilebilir. Katılmadan da oynayabilirsin.</p>
               <label className="consent-check">
                 <input type="checkbox" checked={collectionConsent} onChange={(event) => setCollectionConsent(event.target.checked)} data-cy="collection-opt-in" />
-                Bu anonim oturumu ödev verisine eklemeyi kabul ediyorum.
+                Anonim yanıtlarımın ödevin herkese açık veri kümesinde yayımlanmasını kabul ediyorum.
               </label>
             </section>
           )}
