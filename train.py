@@ -34,19 +34,19 @@ TOLERANCE = 1e-4
 FEATURES = [
     "seviye_deneyimli",
     "karar_suresi_sn",
-    "onceki_yanlis_sayisi",
+    "onceki_riskli_secim_sayisi",
     "onceki_ipucu_sayisi",
     "sahne_no",
 ]
-TARGET = "ipucu_ihtiyaci"
+TARGET = "riskli_secim"
 REQUIRED_COLUMNS = ["session_id", "decision_id", *FEATURES, TARGET, "kaynak"]
-LABELS = {"0": "İpucuna ihtiyaç duymadı", "1": "İpucuna ihtiyaç duydu"}
+LABELS = {"0": "Güvenli seçimi yaptı", "1": "Riskli seçimi yaptı"}
 REFERENCE_INPUTS = [
-    {"seviye_deneyimli": 0, "karar_suresi_sn": 8.0, "onceki_yanlis_sayisi": 0, "onceki_ipucu_sayisi": 0, "sahne_no": 1},
-    {"seviye_deneyimli": 1, "karar_suresi_sn": 22.0, "onceki_yanlis_sayisi": 0, "onceki_ipucu_sayisi": 0, "sahne_no": 1},
-    {"seviye_deneyimli": 0, "karar_suresi_sn": 41.0, "onceki_yanlis_sayisi": 1, "onceki_ipucu_sayisi": 1, "sahne_no": 2},
-    {"seviye_deneyimli": 1, "karar_suresi_sn": 56.0, "onceki_yanlis_sayisi": 2, "onceki_ipucu_sayisi": 1, "sahne_no": 3},
-    {"seviye_deneyimli": 0, "karar_suresi_sn": 13.5, "onceki_yanlis_sayisi": 1, "onceki_ipucu_sayisi": 2, "sahne_no": 3},
+    {"seviye_deneyimli": 0, "karar_suresi_sn": 8.0, "onceki_riskli_secim_sayisi": 0, "onceki_ipucu_sayisi": 0, "sahne_no": 1},
+    {"seviye_deneyimli": 1, "karar_suresi_sn": 22.0, "onceki_riskli_secim_sayisi": 0, "onceki_ipucu_sayisi": 0, "sahne_no": 1},
+    {"seviye_deneyimli": 0, "karar_suresi_sn": 41.0, "onceki_riskli_secim_sayisi": 1, "onceki_ipucu_sayisi": 1, "sahne_no": 2},
+    {"seviye_deneyimli": 1, "karar_suresi_sn": 56.0, "onceki_riskli_secim_sayisi": 2, "onceki_ipucu_sayisi": 1, "sahne_no": 3},
+    {"seviye_deneyimli": 0, "karar_suresi_sn": 13.5, "onceki_riskli_secim_sayisi": 1, "onceki_ipucu_sayisi": 2, "sahne_no": 3},
 ]
 
 
@@ -68,7 +68,7 @@ def load_real_data() -> pd.DataFrame:
     if real[REQUIRED_COLUMNS].isna().any().any():
         stop("Gerçek oturum satırlarında boş alan var.")
     if not set(real[TARGET].unique()).issubset({0, 1}):
-        stop("ipucu_ihtiyaci yalnızca 0 veya 1 olmalı.")
+        stop("riskli_secim yalnızca 0 veya 1 olmalı.")
     if set(real[TARGET].unique()) != {0, 1}:
         stop("Eğitim için hem 0 hem 1 etiketli gerçek yanıt bulunmalı.")
     if real["session_id"].astype(str).str.strip().eq("").any():
@@ -87,7 +87,7 @@ def load_real_data() -> pd.DataFrame:
     if not np.isfinite(real[[*FEATURES, TARGET]].to_numpy(dtype=float)).all():
         stop("Özellikler ve etiketler sonlu sayısal değerler olmalı.")
     if not real["seviye_deneyimli"].isin([0, 1]).all() or not real[TARGET].isin([0, 1]).all():
-        stop("seviye_deneyimli ve ipucu_ihtiyaci 0/1 olmalı.")
+        stop("seviye_deneyimli ve riskli_secim 0/1 olmalı.")
     if not real["sahne_no"].isin([1, 2, 3]).all():
         stop("sahne_no yalnızca 1, 2 veya 3 olabilir.")
     if not real["karar_suresi_sn"].between(0, 600).all():
@@ -122,7 +122,7 @@ def evaluate_grouped(data: pd.DataFrame) -> dict[str, float]:
     predicted = (oof_probabilities >= PROBABILITY_THRESHOLD).astype(int)
     metrics = {
         "balanced_accuracy": float(balanced_accuracy_score(target, predicted)),
-        "recall_ipucu_gerekli": float(recall_score(target, predicted, pos_label=1, zero_division=0)),
+        "recall_riskli_secim": float(recall_score(target, predicted, pos_label=1, zero_division=0)),
         "probability_threshold": PROBABILITY_THRESHOLD,
         "validation": "5-fold GroupKFold grouped by session_id",
         "real_sessions": int(groups.nunique()),
@@ -130,8 +130,8 @@ def evaluate_grouped(data: pd.DataFrame) -> dict[str, float]:
     }
     if metrics["balanced_accuracy"] < MIN_BALANCED_ACCURACY:
         stop(f"Balanced accuracy {metrics['balanced_accuracy']:.3f} < {MIN_BALANCED_ACCURACY:.2f}; candidate model not published.")
-    if metrics["recall_ipucu_gerekli"] < MIN_POSITIVE_RECALL:
-        stop(f"İpucu gereken sınıf recall {metrics['recall_ipucu_gerekli']:.3f} < {MIN_POSITIVE_RECALL:.2f}; candidate model not published.")
+    if metrics["recall_riskli_secim"] < MIN_POSITIVE_RECALL:
+        stop(f"Riskli seçim sınıfı recall {metrics['recall_riskli_secim']:.3f} < {MIN_POSITIVE_RECALL:.2f}; candidate model not published.")
     return metrics
 
 
@@ -177,7 +177,7 @@ def main() -> None:
     config = {
         "schema_version": 1,
         "title": "The Primer — davranıştan uyarlanan ipucu modeli",
-        "description": "Karar öncesi oyun davranışından kısa öğrenme ipucuna ihtiyaç olasılığını tahmin eder. Klinik veya ölçme-değerlendirme kararı değildir.",
+        "description": "Karar öncesi oyun davranışından oyuncunun riskli seçeneği işaretleme olasılığını tahmin eder. Klinik veya ölçme-değerlendirme kararı değildir.",
         "target": TARGET,
         "classes": [0, 1],
         "class_labels": LABELS,
@@ -249,7 +249,7 @@ def model_card(config: dict) -> str:
     return f"""# The Primer — davranıştan uyarlanan ipucu modeli
 
 ## Amaç
-Bu küçük tablo modeli, aynı eğitim senaryosunda oyuncunun o karar öncesinde kısa bir ipucuna ihtiyaç duyup duymayacağını tahmin eder. Olasılık en az {config['decision_threshold']:.2f} ise web uygulaması ipucunu gösterir; deneyimli moddaki sayaç o sahnede durur.
+Bu küçük tablo modeli, aynı eğitim senaryosunda oyuncunun karar vermeden önce riskli seçeneği işaretleme olasılığını tahmin eder. Olasılık en az {config['decision_threshold']:.2f} ise web uygulaması karara özel koruyucu ipucunu gösterir; deneyimli moddaki sayaç o sahnede durur.
 
 ## Veri ve yöntem
 - Kaynak: yalnızca açık rıza verilmiş, kimliksizleştirilmiş gerçek oyun oturumları (`kaynak=gercek`); sentetik satırlar eğitimden çıkarılır.
@@ -259,7 +259,7 @@ Bu küçük tablo modeli, aynı eğitim senaryosunda oyuncunun o karar öncesind
 
 ## Eval
 - Balanced accuracy: {metrics['balanced_accuracy']:.3f} (kabul alt sınırı {MIN_BALANCED_ACCURACY:.2f})
-- İpucu gerekli recall: {metrics['recall_ipucu_gerekli']:.3f} (kabul alt sınırı {MIN_POSITIVE_RECALL:.2f})
+- Riskli seçim recall: {metrics['recall_riskli_secim']:.3f} (kabul alt sınırı {MIN_POSITIVE_RECALL:.2f})
 - Gerçek oturum/karar satırı: {metrics['real_sessions']} / {metrics['real_decision_rows']}
 - ONNX ↔ sklearn maksimum mutlak olasılık farkı: {metrics['sklearn_onnx_max_abs_difference']:.2e} (tolerans {TOLERANCE:.0e})
 

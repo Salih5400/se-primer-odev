@@ -21,11 +21,9 @@ function start() {
   cy.get('[data-cy="start-game"]').click();
 }
 
-function completeCollectedDecision(index, needsHint) {
+function completeCollectedDecision(index) {
   cy.get(`[data-cy="decision-option-${index}"]`).click();
-  cy.get('[data-cy="need-hint-survey"]').should("be.visible");
-  cy.get(`[data-cy="need-hint-${needsHint ? "yes" : "no"}"]`).click();
-  cy.get('[data-cy="next-step"]').should("not.be.disabled").click();
+  cy.get('[data-cy="next-step"]').click();
 }
 
 describe("SE Primer karar yolları", () => {
@@ -78,7 +76,6 @@ describe("SE Primer karar yolları", () => {
     cy.get('[data-cy="collection-opt-in"]').should("not.be.checked");
     cy.get('[data-cy="start-game"]').click();
     cy.get('[data-cy="decision-option-0"]').click();
-    cy.get('[data-cy="need-hint-survey"]').should("not.exist");
     cy.get('[data-cy="next-step"]').click();
     cy.window().then((win) => expect(win.localStorage.getItem("se-primer-v2-anonymous-decisions")).to.equal(null));
   });
@@ -89,9 +86,9 @@ describe("SE Primer karar yolları", () => {
     cy.reload();
     cy.get('[data-cy="collection-opt-in"]').check();
     cy.get('[data-cy="start-game"]').click();
-    completeCollectedDecision(0, true);
-    completeCollectedDecision(1, false);
-    completeCollectedDecision(0, true);
+    completeCollectedDecision(0);
+    completeCollectedDecision(1);
+    completeCollectedDecision(0);
     cy.get('[data-cy="collection-export"]').should("contain.text", "3 anonim karar kaydı");
     cy.get('[data-cy="export-csv"]').should("be.enabled");
     cy.window().then((win) => {
@@ -99,7 +96,7 @@ describe("SE Primer karar yolları", () => {
       expect(rows).to.have.length(3);
       expect(new Set(rows.map((row) => row.session_id)).size).to.equal(1);
       expect(rows.map((row) => row.kaynak)).to.deep.equal(["sentetik", "sentetik", "sentetik"]);
-      expect(rows.every((row) => row.ipucu_ihtiyaci === 0 || row.ipucu_ihtiyaci === 1)).to.equal(true);
+      expect(rows.map((row) => row.riskli_secim)).to.deep.equal([0, 1, 0]);
       expect(Object.keys(rows[0])).not.to.include("ad");
     });
   });

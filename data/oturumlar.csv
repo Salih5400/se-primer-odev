@@ -1,1 +1,1 @@
-session_id,decision_id,seviye_deneyimli,karar_suresi_sn,onceki_yanlis_sayisi,onceki_ipucu_sayisi,sahne_no,ipucu_ihtiyaci,kaynak
+session_id,decision_id,seviye_deneyimli,karar_suresi_sn,onceki_riskli_secim_sayisi,onceki_ipucu_sayisi,sahne_no,riskli_secim,kaynak

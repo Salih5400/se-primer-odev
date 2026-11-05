@@ -4,7 +4,7 @@ const wasmDirectory = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/
 const expectedFeatureOrder = [
   "seviye_deneyimli",
   "karar_suresi_sn",
-  "onceki_yanlis_sayisi",
+  "onceki_riskli_secim_sayisi",
   "onceki_ipucu_sayisi",
   "sahne_no",
 ];

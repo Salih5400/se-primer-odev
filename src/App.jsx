@@ -11,12 +11,14 @@ const decisions = [
     tutorPrompt: "Geri almadan önce hangi veritabanı şeması değişikliğini kontrol edersin?",
     options: [
       {
+        risky: false,
         title: "Eski sürüme geri dön",
         detail: "Önceki sürümü yeniden devreye al.",
         result: "Önceki sürümü geri aldın. Şema uyumunu doğrulamak, geri dönüşün veri kaybına yol açmaması için kritik.",
         recap: "Eski sürüme geri dönüldü",
       },
       {
+        risky: true,
         title: "Canlıda yama yap",
         detail: "Mevcut sürüm üzerinde düzeltme yayınla.",
         result: "Canlı yamayla değişiklik yaptın. Yeni kodu üretime almadan önce küçük bir smoke test yapmak riski azaltır.",
@@ -33,12 +35,14 @@ const decisions = [
     tutorPrompt: "Kısa bir smoke testte önce hangi kritik kullanıcı akışını doğrularsın?",
     options: [
       {
+        risky: false,
         title: "Önce kısa bir smoke test çalıştır",
         detail: "Giriş ve randevu oluşturma akışını dene.",
         result: "Kısa smoke testte kritik akışı kontrol ettin. Sorunu tüm kullanıcılara yaymadan yakalama şansın arttı.",
         recap: "Smoke test çalıştırıldı",
       },
       {
+        risky: true,
         title: "Test etmeden hemen yayına al",
         detail: "Değişikliği beklemeden üretime gönder.",
         result: "Testi atladın. Hata yeniden ortaya çıkarsa kesinti uzayabilir; her yayından önce kritik akışı doğrula.",
@@ -55,12 +59,14 @@ const decisions = [
     tutorPrompt: "Ekibe göndermeden önce logdaki hangi alanı maskelemen gerekir?",
     options: [
       {
+        risky: false,
         title: "Logdaki adı maskele",
         detail: "Tanımlayıcı alanları gizleyip gerekli hata bilgisini paylaş.",
         result: "Logdaki sentetik adı maskeledin. Ekip hata bilgisini görürken kişisel veri korunuyor.",
         recap: "Logdaki hasta adı maskelendi",
       },
       {
+        risky: true,
         title: "Ham logu ekiple paylaş",
         detail: "Logu olduğu gibi gönder.",
         result: "Ham log kişisel veri içerebilir. Ekip içi paylaşım da erişimi genişletir; gerekli alanları maskele.",
@@ -78,7 +84,7 @@ const parityMode = queryParams.get("parity") === "1";
 const collectionStorageKey = "se-primer-v2-anonymous-decisions";
 const collectionColumns = [
   "session_id", "decision_id", "seviye_deneyimli", "karar_suresi_sn",
-  "onceki_yanlis_sayisi", "onceki_ipucu_sayisi", "sahne_no", "ipucu_ihtiyaci", "kaynak",
+  "onceki_riskli_secim_sayisi", "onceki_ipucu_sayisi", "sahne_no", "riskli_secim", "kaynak",
 ];
 
 function readCollectedRows() {
@@ -165,7 +171,6 @@ function App() {
   const [tutorStatus, setTutorStatus] = useState("idle");
   const [collectionConsent, setCollectionConsent] = useState(false);
   const [sessionId, setSessionId] = useState("");
-  const [needHintLabel, setNeedHintLabel] = useState(null);
   const [collectionCount, setCollectionCount] = useState(() => readCollectedRows().length);
   const [collectionError, setCollectionError] = useState("");
   const [adaptiveStatus, setAdaptiveStatus] = useState("idle");
@@ -180,29 +185,48 @@ function App() {
   const chooseOption = useCallback((index, timedOut = false) => {
     const option = decisions[currentStep].options[index];
     const previousHintCount = choices.filter((choice) => choice.hintUsed).length;
-    const previousWrongCount = choices.filter((choice) => choice.index !== 0).length;
+    const previousRiskyChoiceCount = choices.filter((choice) => choice.risky).length;
     const elapsedSeconds = Math.min(600, Math.max(0, Math.round((Date.now() - decisionStartedAt.current) / 100) / 10));
     const features = {
       seviye_deneyimli: profile.level === "experienced" ? 1 : 0,
       karar_suresi_sn: elapsedSeconds,
-      onceki_yanlis_sayisi: previousWrongCount,
+      onceki_riskli_secim_sayisi: previousRiskyChoiceCount,
       onceki_ipucu_sayisi: previousHintCount,
       sahne_no: currentStep + 1,
     };
     setChoices((previous) => {
       const next = previous.slice(0, currentStep);
-      next.push({ index, recap: option.recap, automatic: timedOut, hintUsed: hintShown, features });
+      const risky = option.risky;
+      next.push({ index, recap: option.recap, automatic: timedOut, hintUsed: hintShown, risky, features });
       return next;
     });
-    setNeedHintLabel(null);
     setCollectionError("");
+    if (collectionMode && collectionConsent) {
+      const row = {
+        session_id: sessionId,
+        decision_id: decisions[currentStep].id,
+        ...features,
+        riskli_secim: option.risky ? 1 : 0,
+        kaynak: syntheticTestMode ? "sentetik" : "gercek",
+      };
+      try {
+        const rows = readCollectedRows();
+        const existingIndex = rows.findIndex((item) => item.session_id === sessionId && item.decision_id === row.decision_id);
+        if (existingIndex >= 0) rows[existingIndex] = row;
+        else rows.push(row);
+        window.localStorage.setItem(collectionStorageKey, JSON.stringify(rows));
+        setCollectionCount(rows.length);
+      } catch {
+        setCollectionError("Tarayıcı bu kaydı saklayamadı. Depolama alanını kontrol et.");
+      }
+    }
     setAutomaticChoice(timedOut);
     if (currentStep === 2) setSafeEnding(index === 0);
     setTutorOpen(false);
     setTutorStatus("idle");
     setTutorReply("");
     setPhase("feedback");
-  }, [choices, currentStep, hintShown, profile.level]);
+  }, [choices, collectionConsent, currentStep, hintShown, profile.level, sessionId]);
 
   useEffect(() => {
     if (screen === "scene" && phase === "decision") decisionStartedAt.current = Date.now();
@@ -233,7 +257,7 @@ function App() {
         const features = {
           seviye_deneyimli: profile.level === "experienced" ? 1 : 0,
           karar_suresi_sn: Math.min(600, Math.max(0, (Date.now() - decisionStartedAt.current) / 1000)),
-          onceki_yanlis_sayisi: choices.filter((choice) => choice.index !== 0).length,
+          onceki_riskli_secim_sayisi: choices.filter((choice) => choice.risky).length,
           onceki_ipucu_sayisi: choices.filter((choice) => choice.hintUsed).length,
           sahne_no: currentStep + 1,
         };
@@ -268,7 +292,7 @@ function App() {
   }, [choices, currentStep, phase, profile.level, screen]);
 
   useEffect(() => {
-    if (screen !== "scene" || phase !== "decision" || profile.level !== "experienced" || modelTriggeredHint) return undefined;
+    if (screen !== "scene" || phase !== "decision" || collectionMode || profile.level !== "experienced" || modelTriggeredHint) return undefined;
     setSecondsRemaining(60);
     const startedAt = Date.now();
     const timer = window.setInterval(() => {
@@ -288,7 +312,6 @@ function App() {
     setCurrentStep(0);
     setChoices([]);
     setHintShown(false);
-    setNeedHintLabel(null);
     setCollectionError("");
     setSecondsRemaining(60);
     setScreen("scene");
@@ -296,41 +319,14 @@ function App() {
   };
 
   const nextStep = () => {
-    if (collectionMode && collectionConsent && needHintLabel === null) return;
     if (currentStep === 2) {
       setScreen("ending");
       return;
     }
     setCurrentStep((step) => step + 1);
     setHintShown(false);
-    setNeedHintLabel(null);
     setAutomaticChoice(false);
     setPhase("decision");
-  };
-
-  const saveNeedHintLabel = (needsHint) => {
-    setNeedHintLabel(needsHint);
-    if (!collectionMode || !collectionConsent) return;
-    const choice = choices[currentStep];
-    if (!choice?.features) return;
-    const row = {
-      session_id: sessionId,
-      decision_id: decisions[currentStep].id,
-      ...choice.features,
-      ipucu_ihtiyaci: needsHint ? 1 : 0,
-      kaynak: syntheticTestMode ? "sentetik" : "gercek",
-    };
-    try {
-      const rows = readCollectedRows();
-      const existingIndex = rows.findIndex((item) => item.session_id === sessionId && item.decision_id === row.decision_id);
-      if (existingIndex >= 0) rows[existingIndex] = row;
-      else rows.push(row);
-      window.localStorage.setItem(collectionStorageKey, JSON.stringify(rows));
-      setCollectionCount(rows.length);
-      setCollectionError("");
-    } catch {
-      setCollectionError("Tarayıcı bu kaydı saklayamadı. İndirme ve veri iznini kontrol et.");
-    }
   };
 
   const restart = () => {
@@ -345,7 +341,6 @@ function App() {
     setTutorStatus("idle");
     setCollectionConsent(false);
     setSessionId("");
-    setNeedHintLabel(null);
     setCollectionError("");
     setSafeEnding(true);
     setScreen("entry");
@@ -443,10 +438,10 @@ function App() {
           {collectionMode && (
             <section className="collection-consent" data-cy="collection-consent">
               <strong>Anonim veri toplama modu</strong>
-              <p>Katılmayı seçersen karar süresi, oyun içi davranış ve ipucu ihtiyacı yanıtların bu tarayıcıda saklanır. Ad, e-posta, cihaz kimliği veya konum alınmaz. Dışa aktarılan anonim kayıtlar ödevin herkese açık GitHub deposunda yayımlanır ve başkaları tarafından indirilebilir. Katılmadan da oynayabilirsin.</p>
+              <p>Katılmayı seçersen karar süresi ve seçtiğin güvenli/riskli oyun davranışları bu tarayıcıda saklanır. Ad, e-posta, cihaz kimliği veya konum alınmaz. Dışa aktarılan anonim kayıtlar ödevin herkese açık GitHub deposunda yayımlanır ve başkaları tarafından indirilebilir. Katılmadan da oynayabilirsin.</p>
               <label className="consent-check">
                 <input type="checkbox" checked={collectionConsent} onChange={(event) => setCollectionConsent(event.target.checked)} data-cy="collection-opt-in" />
-                Anonim yanıtlarımın ödevin herkese açık veri kümesinde yayımlanmasını kabul ediyorum.
+                Anonim oyun davranışlarımın ödevin herkese açık veri kümesinde yayımlanmasını kabul ediyorum.
               </label>
             </section>
           )}
@@ -508,7 +503,7 @@ function App() {
                   </button>
                 ))}
               </div>
-              {hintShown && <p className="hint-box" role="status" data-cy="hint">{decision.hint}</p>}
+              {hintShown && <p className="hint-box" role="status" data-cy="hint">{modelTriggeredHint && <strong>Risk uyarısı · tahmin %{Math.round((adaptiveProbability ?? 0) * 100)}: </strong>}{decision.hint}</p>}
             </section>
           ) : (
             <section className="feedback-block" aria-live="polite" data-cy="decision-feedback">
@@ -516,18 +511,8 @@ function App() {
               <h1>{choices[currentStep]?.recap}</h1>
               <p>{decision.options[choices[currentStep]?.index ?? 0].result}</p>
               {automaticChoice && <p className="auto-choice-note">Süre dolduğu için güvenli varsayılan seçildi.</p>}
-              {collectionMode && collectionConsent && (
-                <section className="feedback-survey" data-cy="need-hint-survey">
-                  <p>Bu karardan önce ipucuna ihtiyaç duydun mu?</p>
-                  <div className="survey-buttons">
-                    <button type="button" aria-pressed={needHintLabel === true} onClick={() => saveNeedHintLabel(true)} data-cy="need-hint-yes">Evet</button>
-                    <button type="button" aria-pressed={needHintLabel === false} onClick={() => saveNeedHintLabel(false)} data-cy="need-hint-no">Hayır</button>
-                  </div>
-                  {needHintLabel !== null && <p className="survey-saved" role="status">Anonim yanıt kaydedildi. İstersen seçimini değiştirebilirsin.</p>}
-                  {collectionError && <p className="collection-error" role="alert">{collectionError}</p>}
-                </section>
-              )}
-              <button className="primary-button" type="button" onClick={nextStep} disabled={collectionMode && collectionConsent && needHintLabel === null} data-cy="next-step">
+              {collectionError && <p className="collection-error" role="alert">{collectionError}</p>}
+              <button className="primary-button" type="button" onClick={nextStep} data-cy="next-step">
                 {currentStep === 2 ? "Sonucu gör" : "Sonraki karar"} <span aria-hidden="true">→</span>
               </button>
             </section>
@@ -569,7 +554,7 @@ function App() {
               </div>}
             </form>
           )}
-          <p className="scene-footnote">{profile.level === "experienced" ? `Deneyimli modunda ${secondsRemaining} sn sayaç aktif` : "İstersen kararlarında ipucu alabilirsin"}</p>
+          <p className="scene-footnote">{collectionMode ? "Veri toplama oturumunda süre baskısı uygulanmıyor" : modelTriggeredHint ? "Tahmini risk uyarısı için bu kararda sayaç duraklatıldı" : profile.level === "experienced" ? `Deneyimli modunda ${secondsRemaining} sn sayaç aktif` : "İstersen kararlarında ipucu alabilirsin"}</p>
         </div>
       </main>
     );

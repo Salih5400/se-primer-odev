@@ -3,22 +3,22 @@
 ## v2: Davranıştan uyarlanan destek modeli
 
 ### Problem ve hedef
-Primer, oyuncunun karar öncesi yardım ihtiyacını karar süresi ve önceki oyun davranışlarından tahmin eder. Hedef sütun `ipucu_ihtiyaci` oyuncunun her sahne sonunda verdiği anonim Evet/Hayır yanıtıdır. Model bir tanı veya başarı puanı üretmez; yalnızca o sahnede kısa bir düşünme ipucunu ne zaman önereceğini belirler.
+Bu sürüm taban örneğini genişletir: Primer, oyuncunun sahne sonunda kendi yardım ihtiyacını sormak yerine, karar öncesi davranışından **riskli seçeneği işaretleme olasılığını** tahmin eder. Hedef sütun `riskli_secim`, seçilen seçeneğin oyun kurallarına göre güvenli (0) veya riskli (1) olmasını kaydeder. Model gerçek yetkinlik/niyet puanı değildir; yalnızca o sahnede riski azaltan ipucunu ne zaman öne çıkaracağını belirler.
 
 ### Girdi, çıktı ve ürün davranışı
-- Özellikler (tam sıra): `seviye_deneyimli`, `karar_suresi_sn`, `onceki_yanlis_sayisi`, `onceki_ipucu_sayisi`, `sahne_no`.
-- Çıktı: `ipucu_ihtiyaci` olasılığı, 0–1 aralığında. Sabit ürün eşiği **0,55**.
-- Olasılık `>= 0,55` ise uygulama kısa ipucunu sahne açılınca gösterir; deneyimli modda 60 saniyelik sayaç o sahnede çalışmaz. Daha düşük olasılıkta mevcut akış korunur ve ipucu kullanıcı isterse açılır.
+- Özellikler (tam sıra): `seviye_deneyimli`, `karar_suresi_sn`, `onceki_riskli_secim_sayisi`, `onceki_ipucu_sayisi`, `sahne_no`.
+- Çıktı: `riskli_secim` olasılığı, 0–1 aralığında. Sabit ürün eşiği **0,55**.
+- Olasılık `>= 0,55` ise uygulama karar öncesinde sahneye özel risk azaltıcı ipucunu gösterir ve deneyimli moddaki 60 saniyelik sayacı duraklatır. Daha düşük olasılıkta mevcut akış korunur; oyuncu yine ipucu isteyebilir.
 - Model yüklenemez veya sözleşme doğrulanamazsa oyun mevcut kurallı akışla devam eder; hatalı model oyun akışını durdurmaz.
 
 ### Eval metriği ve yayın kapısı (eğitimden önce sabitlendi)
 - Yalnız `kaynak=gercek` olan en az **15 farklı `session_id`** kullanılır. Satırlar aynı oturuma bağlı olduğundan veri `GroupKFold(n_splits=5)` ile oturum bazında ayrılır; aynı oturumun kararları eğitim ve doğrulama tarafına bölünmez.
-- Birincil kabul metriği **balanced accuracy >= 0,65**; yardım ihtiyacı olan sınıftaki recall **>= 0,70** olmalıdır. Ölçütlerden biri sağlanmazsa eğitim komutu başarısız olur ve yeni model artefaktı yazmaz/yayınlamaz.
+- Birincil kabul metriği **balanced accuracy >= 0,65**; riskli seçim sınıfındaki recall **>= 0,70** olmalıdır. Ölçütlerden biri sağlanmazsa eğitim komutu başarısız olur ve yeni model artefaktı yazmaz/yayınlamaz.
 - Eşiğin ürün kararı 0,55 olarak ölçümden önce sabitlenmiştir; doğrulama sonuçlarına göre sonradan ayarlanmaz.
 
 ### Yeni kabul örnekleri
-1. **Veri toplama ve rıza:** Veri toplama modu açıkken açık rıza verilmeden oturum kaydedilmez. Rıza varsa her karar bir CSV satırı olur; rastgele oturum kimliği kullanılır, ad/e-posta/cihaz kimliği/konum alınmaz ve oyuncu her sahne sonunda yardım ihtiyacını bildirir.
-2. **Uyarlama:** Model olasılığı 0,55 veya üstündeyse sahneye özel ipucu görünür ve deneyimli oyuncuda sayaç o sahne için kapanır; altındaysa orijinal 60 saniye ve isteğe bağlı ipucu davranışı sürer.
+1. **Veri toplama ve rıza:** Veri toplama modu açıkken açık rıza verilmeden oturum kaydedilmez. Rıza varsa her karar bir CSV satırı olur; rastgele oturum kimliği kullanılır, ad/e-posta/cihaz kimliği/konum alınmaz. Etiket, oyuncunun işaretlediği seçeneğin önceden tanımlı güvenli/riskli özelliğinden gelir; ek anket yanıtı gerekmez.
+2. **Uyarlama:** Model olasılığı 0,55 veya üstündeyse karar öncesi koruyucu ipucu görünür ve deneyimli oyuncuda sayaç o sahnede duraklar; altındaysa orijinal sayaç ve isteğe bağlı ipucu davranışı sürer.
 3. **Güvenli hata ve sürüm:** Model yükleme, ONNX sözleşmesi veya tahmin doğrulaması başarısız olursa statik oyun çalışır; model URL'si commit'e sabitlenir, testteki 5 referans girdide uygulama olasılığı Python Oracle'dan `1e-4`'ten az sapar.
 
 ## Problem

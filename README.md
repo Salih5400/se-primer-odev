@@ -16,6 +16,8 @@ Stitch projesi: https://stitch.withgoogle.com/projects/10280267099388934499
 
 - [Ürün spesifikasyonu](spec.md)
 - [Tasarım sistemi ve ekran davranışları](DESIGN.md)
+- [Tek sayfalık klasik vize tasarımı](SINAV_TASARIMI.md)
+- [Yayın, dağıtım ve geri alma planı](RELEASE.md)
 - [Stitch için kullanılan prompt](design/stitch-prompt.md)
 
 ## The Primer v2 veri toplama
@@ -23,13 +25,15 @@ Stitch projesi: https://stitch.withgoogle.com/projects/10280267099388934499
 Canlı veri toplama sayfası: https://salih5400.github.io/se-primer-odev/?collect=1 (GitHub Pages dağıtımı tamamlandıktan sonra açılır).
 
 - Yerelde `npm install` ve `npm run dev` çalıştırın; sonra `http://localhost:5173/?collect=1` adresini açın. GitHub Pages dağıtımı açıldığında aynı modu canlı linkin sonuna `?collect=1` ekleyerek kullanabilirsiniz.
-- Üç farklı katılımcı beşer oturum oynasın. Her kişi oturum başına rıza kutusunu işaretlesin; her kararın geri bildirim ekranında “ipucuna ihtiyaç duydun mu?” sorusunu yanıtlasın. Katılımcılar farklı cihaz kullanırsa her cihazdan CSV dışa aktarın ve dosyaları birleştirin.
+- Üç farklı katılımcı beşer oturum oynasın. Her oturumda rıza kutusunu işaretlesin; uygulama her sahnede oyuncunun seçtiği güvenli/riskli seçeneği otomatik kaydeder. Katılımcılar farklı cihaz kullanırsa final ekranında her cihazdan CSV dışa aktarın ve dosyaları birleştirin.
 - Finalde **CSV dışa aktar** düğmesini kullanın. Gerçek katılımcı CSV satırlarını `data/oturumlar.csv` başlığıyla birleştirin. Cypress testlerindeki `kaynak=sentetik` satırları eğitime girmez.
 - Uygulama ad, e-posta, cihaz kimliği, IP, konum veya serbest metin toplamaz. Oturumlar rastgele kimlikle ilişkilendirilir ve yalnızca tarayıcıda tutulur.
 
 Model hedefi, özellik sırası ve eğitimden önce sabitlenen kabul eşikleri [spec.md](spec.md)'de; CSV sütunlarının tanımı [data/SOZLUK.md](data/SOZLUK.md)'dedir.
 
 ### ML eğitimi
+
+Eğitim eval kapısını geçerse HF hesabında oturum açıp `HF_REPO_ID=kullanici/model-adi` ayarla, ardından `python publish_model.py` çalıştır. Script public modele yükler ve web manifestini tam commit SHA'larına sabitler. Token'ı repoya veya sohbete ekleme; manifesti ve HF commit kaydını GitHub'a gönderdikten sonra Pages deployment ve Cypress'i doğrula.
 
 Python 3.12 kullanın. `.venv` oluşturup [requirements-ml.txt](requirements-ml.txt)'deki sürümleri kurun, sonra `python train.py` çalıştırın. Betik en az 15 tam gerçek oturum ve önceden belirlenen eval eşiği olmadan model üretmez. Eşik geçilirse `model/` ve `tests/parite.json` üretilir.
 
@@ -57,10 +61,25 @@ Yayımlanan model, `public/model/release.json` içindeki tam Hugging Face commit
 - **İkinci bölüm eklemedim:** ilk sürümün kapsamını tek bir vaka ve üç kararla sınırlayarak temel etkileşimi değerlendirmeyi kolaylaştırıyorum.
 - **Native mobil uygulama yapmadım:** telefonda tarayıcıdan çalışmak ödevin mobil kullanım hedefini karşılıyor ve mağaza dağıtımı gerektirmiyor.
 
-## AI araçları ve öğrenci katkısı
+## AI araçları ve insan katkısı
 
-AI kodlama asistanı React/Vite uygulamasının, testlerin, veri toplama akışının, model eğitim/ONNX dışa aktarma betiğinin ve teknik dokümantasyonun hazırlanmasında kullanıldı. Öğrenci ürün kararlarını ve veri etiketini belirledi, uygulamayı gerçek katılımcılarla çalıştırıp toplanan veriyi gözden geçirmeli; model/eval sonuçlarını, lisansları ve bu depodaki kodu teslimden önce inceleyip açıklayabilmelidir. Bu depodaki kullanıcı verisi gerçek katılımcı rızasıyla elde edilmelidir; sentetik test kayıtları eğitim verisi olarak kullanılmaz.
+- **Codex coding agent:** Ödev isterlerini yapılandırmak ve `spec.md`, veri toplama akışı, testler, eğitim/ONNX betiği ile teknik dokümantasyon taslağını üretip düzenlemek için kullanıldı.
+- **İnsan girdisi:** Öğrenci önceki The Primer ürününü ve Stitch tasarımını sağladı, GitHub deposunun açılıp yayımlanmasını istedi ve 3 gönüllü bulabileceğini doğruladı.
+- **İnsan incelemesi gerekli:** Model hedefi, özellikler, `0,55` ürün eşiği ve eval eşikleri bu geliştirme sırasında öneri olarak sabitlendi; öğrenci bunları anlayıp onaylamalı veya düzeltmeli, gerçek katılımcı oturumlarını toplamalı ve metrik/model kartını doğrulamalıdır.
+- **Elle düzeltilen çıktılar:** Sentetik eğitim verisi üretmek yerine gerçek oturum kapısı eklendi; açık GitHub veri kümesi için açık rıza metni ve model kapalıyken güvenli statik akış eklendi. Cypress verisi `kaynak=sentetik` olarak işaretlenir ve eğitimden dışlanır.
+
+Teslim eden öğrenci, kodu ve kavramları açıklayıp savunabilmelidir. Katılımcı verisi yalnızca bilgilendirilmiş onamla toplanır; sentetik Cypress kayıtları eğitim verisi olarak kullanılmaz.
 
 ## Not
 
 Senaryo eğitim amaçlıdır ve hiçbir gerçek hasta verisi içermez.
+
+## Kaynaklar
+
+- Amershi vd., [Software Engineering for Machine Learning: A Case Study](https://www.microsoft.com/en-us/research/wp-content/uploads/2019/03/amershi-icse-2019_Software_Engineering_for_Machine_Learning.pdf) (Microsoft Research, ICSE 2019).
+- Shankar vd., [Operationalizing Machine Learning: An Interview Study](https://arxiv.org/abs/2209.09125) (2022).
+- Mitchell vd., [Model Cards for Model Reporting](https://arxiv.org/abs/1810.03993) (2019).
+- Breck vd., [The ML Test Score](https://research.google/pubs/the-ml-test-score-a-rubric-for-ml-production-readiness-and-technical-debt-reduction/) (Google Research, 2017).
+- Hugging Face Hub, [repo upload and revision guide](https://huggingface.co/docs/huggingface_hub/main/guides/upload).
+- ONNX Runtime, [web inference and deployment options](https://onnxruntime.ai/docs/tutorials/web/build-web-app.html).
+- GitHub, [custom workflows for Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
