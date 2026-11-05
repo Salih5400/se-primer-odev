@@ -46,6 +46,8 @@ Eğitim eval kapısını geçerse HF hesabında oturum açıp `HF_REPO_ID=kullan
 
 Python 3.12 kullanın. `.venv` oluşturup [requirements-ml.txt](requirements-ml.txt)'deki sürümleri kurun, sonra `python train.py` çalıştırın. Betik en az 15 tam gerçek oturum ve önceden belirlenen eval eşiği olmadan model üretmez. Eşik geçilirse `model/` ve `tests/parite.json` üretilir.
 
+İlk 25 gerçek oturumla yapılan değerlendirme önceden belirlenen eşikleri geçmedi; metrikler ve karışıklık matrisi [model kapısı raporunda](eval/model-gate-report.md). Bu nedenle bu veri sürümünde ONNX modeli üretilmedi ve uygulama statik, güvenli akışta kaldı. Veri toplama sayfası ve CSV dışa aktarımındaki bilgilendirilmiş onam, anonim oyun verisinin açık depoda yayımlanacağını katılımcıya bildirir.
+
 ### Tarayıcı çıkarımı ve test kahini
 
 Yayımlanan model, `public/model/release.json` içindeki tam Hugging Face commit URL'sinden tarayıcıda ONNX Runtime Web ile çalışır. `?parity=1` sayfası aynı beş referans girdiyi tarayıcıda çalıştırır; `npm run test:e2e` Python Oracle sonuçlarına karşı `1e-4` toleransını denetler. Model kapalıysa uygulama mevcut Primer akışını korur.
@@ -62,7 +64,7 @@ Yayımlanan model, `public/model/release.json` içindeki tam Hugging Face commit
 
 - Sunucu ve eval betiği Node.js sözdizimi kontrolünden geçti; 20 eval girdisi JSON olarak doğrulandı.
 - AI Studio'da sentetik tutor sorusu gönderildi; Gemini `429 RESOURCE_EXHAUSTED` döndürdü, arayüz yedek yanıtı gösterdi ve yükleme durumu kapandı. 20 model yanıtı değerlendirmesi henüz yapılmadı.
-- `npm install` ve GitHub Pages taban yoluyla `npm run build` başarıyla tamamlandı. Cypress E2E: **15/15 geçti**. Çevrimdışı yedek tutor'ın 20 sentetik vakası **20/20 HTTP 200** döndürdü; elle değerlendirme raporu yukarıda. Gemini kotası yüzünden gerçek modelin 20 yanıtı ayrıca puanlanamadı. v2 ONNX modeli henüz üretilmedi; gerçek katılımcı verisi ve önceden tanımlı eval kapısının geçilmesi bekleniyor.
+- `npm install` ve GitHub Pages taban yoluyla `npm run build` başarıyla tamamlandı. Cypress E2E: **15/15 geçti**. Çevrimdışı yedek tutor'ın 20 sentetik vakası **20/20 HTTP 200** döndürdü; elle değerlendirme raporu yukarıda. Gemini kotası yüzünden gerçek modelin 20 yanıtı ayrıca puanlanamadı. v2 veri kümesi 25 gerçek oturum ve 75 karar satırı içeriyor; eğitim betiği çalıştırıldı ve her iki eval eşiğinin altında kaldığı için ONNX modeli üretmedi. Sonuçlar [model kapısı raporunda](eval/model-gate-report.md).
 
 ## Ürün kararları
 

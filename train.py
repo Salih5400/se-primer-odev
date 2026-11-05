@@ -128,10 +128,13 @@ def evaluate_grouped(data: pd.DataFrame) -> dict[str, float]:
         "real_sessions": int(groups.nunique()),
         "real_decision_rows": int(len(data)),
     }
+    failures = []
     if metrics["balanced_accuracy"] < MIN_BALANCED_ACCURACY:
-        stop(f"Balanced accuracy {metrics['balanced_accuracy']:.3f} < {MIN_BALANCED_ACCURACY:.2f}; candidate model not published.")
+        failures.append(f"balanced accuracy {metrics['balanced_accuracy']:.3f} < {MIN_BALANCED_ACCURACY:.2f}")
     if metrics["recall_riskli_secim"] < MIN_POSITIVE_RECALL:
-        stop(f"Riskli seçim sınıfı recall {metrics['recall_riskli_secim']:.3f} < {MIN_POSITIVE_RECALL:.2f}; candidate model not published.")
+        failures.append(f"riskli seçim recall {metrics['recall_riskli_secim']:.3f} < {MIN_POSITIVE_RECALL:.2f}")
+    if failures:
+        stop("Eval kapısı başarısız; model yayımlanmadı: " + "; ".join(failures) + ".")
     return metrics
 
 
