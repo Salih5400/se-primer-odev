@@ -6,11 +6,12 @@
 
 ## Veri özeti
 
-- 25 farklı anonim gerçek oturum, toplam 75 karar satırı.
+- 66 anonim gerçek oturum, toplam 198 karar satırı. Yeni dosyalarla daha önce yayımlanan oturumlar karşılaştırıldı; aynı `(session_id, decision_id)` kayıtları tekilleştirildi.
 - Her oturum `architecture`, `testing` ve `privacy` kararlarının üçünü de içeriyor.
-- Etiket dağılımı: güvenli seçim (`0`) 52; riskli seçim (`1`) 23.
-- Veri kümesi SHA-256: `480a2ecb0fa6dd7d944df4d541336b9564a3b092d4826208729fc0ff6a424fbc`.
+- Etiket dağılımı: güvenli seçim (`0`) 112; riskli seçim (`1`) 86.
+- Veri kümesi SHA-256: `60553a64d9fc4033edc8a25f513de973616f8bbcf5ae62c22ee7e61fbbcae458`.
 - Bu dosya katılımcı adını, e-postasını, IP adresini, cihaz kimliğini veya serbest metni içermez. Toplama ekranındaki onam, anonim dışa aktarılan verinin açık depoda yayımlanacağını belirtir.
+- Şema kişi kimliği toplamadığı için bölmeler `session_id` bazındadır; aynı kişinin birden fazla oturumunun farklı katlara düşmesi engellenemez.
 
 ## Önceden belirlenen değerlendirme
 
@@ -18,19 +19,19 @@
 
 | Ölçüt | Sonuç | Gereken | Durum |
 |---|---:|---:|---|
-| Balanced accuracy | 0.556 | ≥ 0.65 | Başarısız |
-| Riskli seçim recall | 0.478 | ≥ 0.70 | Başarısız |
+| Balanced accuracy | 0.525 | ≥ 0.65 | Başarısız |
+| Riskli seçim recall | 0.256 | ≥ 0.70 | Başarısız |
 
 Karışıklık matrisi (satırlar gerçek sınıf `0, 1`; sütunlar tahmin `0, 1`):
 
 ```text
-[[33, 19],
- [12, 11]]
+[[89, 23],
+ [64, 22]]
 ```
 
 ## Karar
 
-Kabul kapısı geçilmediği için `model/` veya ONNX artefaktı üretilmedi, Hugging Face'e model yüklenmedi ve uygulamanın `public/model/release.json` manifesti kapalı kaldı. `train.py` bu durumu otomatik uygular. Eşiği sonradan düşürmek ya da başarısız sonucu model olarak yayımlamak yerine, daha çeşitli ve yeni bilgilendirilmiş onamla toplanmış gerçek oturumlar gerekir. Bu veriyle modelin kişiler hakkında genellenebilir davranış tahmini yaptığı iddia edilemez.
+Kabul kapısı geçilmediği için `model/` veya ONNX artefaktı üretilmedi, Hugging Face'e model yüklenmedi ve uygulamanın `public/model/release.json` manifesti kapalı kaldı. `train.py` bu durumu otomatik uygular. Eşiği sonradan düşürmek ya da başarısız sonucu model olarak yayımlamak yerine, daha çeşitli ve yeni bilgilendirilmiş onamla toplanmış gerçek oturumlar gerekir. Oturum kimliği kişi kimliği olmadığından bu değerlendirme bağımsız katılımcılar arasında genellemeyi ölçtüğünü göstermez.
 
 ## Yeniden üretme
 
