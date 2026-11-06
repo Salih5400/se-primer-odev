@@ -4,7 +4,8 @@
 
 - **Sürüm:** v2.0 (hazırlık; henüz model yayımlanmadı)
 - **Değişiklik:** taban örneğindeki öz-bildirilen ipucu ihtiyacının yerine, gözlenen seçimden `riskli_secim` tahmini ekleniyor. Olasılık `>= 0,55` ise sahneye özel koruyucu ipucu gösterilir ve deneyimli moddaki sayaç duraklar.
-- **Hugging Face model deposu / commit:** gerçek verili eğitim ve onam kontrolü tamamlanınca eklenecek. Tüketici `main` dalını değil `public/model/release.json` içinde kaydedilen 40 karakterlik commit’e sabitlenmiş `resolve/<commit>/...` URL’lerini kullanır.
+- **Hugging Face başarısız-eval kaydı / commit:** [se-primer-v2-eval-failure](https://huggingface.co/Salih5400/se-primer-v2-eval-failure/tree/858f074312d036d34ac74ccfcb99adf620b83ade) yalnızca değerlendirme notudur; `model.onnx` içermez ve model tüketicisi olarak kullanılamaz.
+- **Hugging Face model deposu / commit:** henüz yok. Eval kapısı geçip artefaktlar üretildiğinde eklenecek. Gerçek tüketici `main` dalını değil `public/model/release.json` içinde kaydedilen 40 karakterlik commit’e sabitlenmiş `resolve/<commit>/...` URL’lerini kullanır.
 - **Geri alma hedefi:** önceki çalışan Primer sürümü (model kapalı) `4cd01a1485fd21d501888bfd59e97e1135a08c53`; yeni model için ilk iyi Hugging Face commit’i yayın sonrasında bu dosyaya yazılacak.
 
 ## Dağıtım mimarisi ödünleşim matrisi

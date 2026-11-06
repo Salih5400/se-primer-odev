@@ -44,6 +44,8 @@ Windows'ta kurulum ve eğitim için üç komut:
 
 Eğitim eval kapısını geçerse HF hesabında oturum açıp `HF_REPO_ID=kullanici/model-adi` ayarla, ardından `python publish_model.py` çalıştır. Script public modele yükler ve web manifestini tam commit SHA'larına sabitler. Token'ı repoya veya sohbete ekleme; manifesti ve HF commit kaydını GitHub'a gönderdikten sonra Pages deployment ve Cypress'i doğrula.
 
+Mevcut eval sonucu için [Hugging Face değerlendirme kaydı](https://huggingface.co/Salih5400/se-primer-v2-eval-failure/tree/858f074312d036d34ac74ccfcb99adf620b83ade) vardır. Bu commit yalnızca başarısız sonucu ve sınırları belgeleyen bir `README.md` içerir; `model.onnx` veya indirilebilir model yoktur, uygulamada kullanılamaz.
+
 Python 3.12 kullanın. `.venv` oluşturup [requirements-ml.txt](requirements-ml.txt)'deki sürümleri kurun, sonra `python train.py` çalıştırın. Betik en az 15 tam gerçek oturum ve önceden belirlenen eval eşiği olmadan model üretmez. Eşik geçilirse `model/` ve `tests/parite.json` üretilir.
 
 66 gerçek oturumla yapılan değerlendirme önceden belirlenen eşikleri geçmedi; metrikler ve karışıklık matrisi [model kapısı raporunda](eval/model-gate-report.md). Bu nedenle bu veri sürümünde ONNX modeli üretilmedi ve uygulama statik, güvenli akışta kaldı. Veri toplama sayfası ve CSV dışa aktarımındaki bilgilendirilmiş onam, anonim oyun verisinin açık depoda yayımlanacağını katılımcıya bildirir.
@@ -78,7 +80,7 @@ Bu depo şu an yönergedeki bütün puanlanabilir teslimleri tamamlamıyor; **10
 | Gerçek veri, anonimlik, `kaynak` ve veri sözlüğü | Tamamlandı: öğrencinin bildirdiğine göre 7 arkadaş katılımcıdan 66 gerçek oturum / 198 satır; [CSV](data/oturumlar.csv), [sözlük](data/SOZLUK.md). |
 | Tekrarlanabilir eğitim ve başarısız eval'de durma | Kod mevcut; çalıştırma kapıda durdu: balanced accuracy **0,525** (≥0,65 gerekli), riskli seçim recall **0,256** (≥0,70 gerekli). [Ayrıntılı rapor](eval/model-gate-report.md). |
 | `model.onnx`, `config.json` ve model kartı | Üretilmedi; başarısız adayı yayınlamamak için eğitim kapısı durdurdu. |
-| Hugging Face public repo ve commit'e sabitlenmiş model URL'si | Henüz yok; [RELEASE.md](RELEASE.md) yayın ve geri alma planını belgeliyor ama canlı model sürümü içermiyor. |
+| Hugging Face public repo ve commit'e sabitlenmiş model URL'si | Çalıştırılabilir model ve model URL'si yok. Yalnızca [commit'e sabitli başarısız eval kaydı](https://huggingface.co/Salih5400/se-primer-v2-eval-failure/tree/858f074312d036d34ac74ccfcb99adf620b83ade) yayımlandı; model içermez. [RELEASE.md](RELEASE.md) gerçek model yayını olmadığını belgeliyor. |
 | Uygulamada model çıkarımının oyunu değiştirmesi | Kod yolu hazır; `public/model/release.json` kapalı olduğu için yayımlanmış model davranışı şu anda etkin değil. |
 | Python ONNX Oracle ve 5 girdilik parite | Henüz tamamlanmadı: `tests/parite.json` ve `public/tests/parite.json` boş; model olmadığı için Oracle/parite çalıştırılamıyor. Cypress'teki bu madde beklemede kalıyor. |
 | Cypress regresyonu | Tamamlandı: **15/15 geçti**. Production build de başarılı. |
