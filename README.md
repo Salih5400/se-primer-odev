@@ -75,7 +75,7 @@ Bu depo şu an yönergedeki bütün puanlanabilir teslimleri tamamlamıyor; **10
 | Yönerge maddesi | Durum ve kanıt |
 |---|---|
 | Model hedefi, önceden sabitlenmiş eşik ve yeni kabul örnekleri | Tamamlandı: [spec.md](spec.md). |
-| Gerçek veri, anonimlik, `kaynak` ve veri sözlüğü | Tamamlandı: 66 gerçek oturum / 198 satır, [CSV](data/oturumlar.csv), [sözlük](data/SOZLUK.md). |
+| Gerçek veri, anonimlik, `kaynak` ve veri sözlüğü | Tamamlandı: öğrencinin bildirdiğine göre 7 arkadaş katılımcıdan 66 gerçek oturum / 198 satır; [CSV](data/oturumlar.csv), [sözlük](data/SOZLUK.md). |
 | Tekrarlanabilir eğitim ve başarısız eval'de durma | Kod mevcut; çalıştırma kapıda durdu: balanced accuracy **0,525** (≥0,65 gerekli), riskli seçim recall **0,256** (≥0,70 gerekli). [Ayrıntılı rapor](eval/model-gate-report.md). |
 | `model.onnx`, `config.json` ve model kartı | Üretilmedi; başarısız adayı yayınlamamak için eğitim kapısı durdurdu. |
 | Hugging Face public repo ve commit'e sabitlenmiş model URL'si | Henüz yok; [RELEASE.md](RELEASE.md) yayın ve geri alma planını belgeliyor ama canlı model sürümü içermiyor. |
@@ -87,7 +87,7 @@ Bu depo şu an yönergedeki bütün puanlanabilir teslimleri tamamlamıyor; **10
 
 ### Veri ve eğitim hattı denetimi
 
-Yeni dosyalar eklenirken aynı `(session_id, decision_id)` ile gelen 18 tekrar satırı bir kez sayıldı; çakışan tekrar kaydı bulunmadı. Karar kimliği ile sahne numarası eşleşmesinde ve önceki riskli karar sayısında tutarsızlık bulunmadı. Uygulama etiketi seçilen seçeneğin önceden tanımlı `option.risky` değerinden yazıyor; eğitim betiğinin sonucu bağımsız metrik hesabıyla aynı. Bu kontroller belirgin bir veri-kayıt/eval kodu hatası göstermedi; mevcut özellikler ve model reçetesi bu örneklemde hedefi yeterince öngöremiyor. Kişi kimliği tutulmadığından GroupKFold yalnızca oturumları ayırır; aynı katılımcının farklı oturumlarının farklı katlara düşmesini engelleyemez.
+Öğrencinin bildirdiğine göre veri 7 arkadaş katılımcının 66 oturumundan oluşuyor; kişi sayısı uygulama tarafından kaydedilmedi. Yeni dosyalar eklenirken aynı `(session_id, decision_id)` ile gelen 18 tekrar satırı bir kez sayıldı; çakışan tekrar kaydı bulunmadı. Karar kimliği ile sahne numarası eşleşmesinde ve önceki riskli karar sayısında tutarsızlık bulunmadı. Uygulama etiketi seçilen seçeneğin önceden tanımlı `option.risky` değerinden yazıyor; eğitim betiğinin sonucu bağımsız metrik hesabıyla aynı. Bu kontroller belirgin bir veri-kayıt/eval kodu hatası göstermedi; mevcut özellikler ve model reçetesi bu örneklemde hedefi yeterince öngöremiyor. Kişi kimliği tutulmadığından GroupKFold yalnızca oturumları ayırır; aynı katılımcının farklı oturumlarının farklı katlara düşmesini engelleyemez.
 
 ## Ürün kararları
 

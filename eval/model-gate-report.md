@@ -6,7 +6,7 @@
 
 ## Veri özeti
 
-- 66 anonim gerçek oturum, toplam 198 karar satırı. Yeni dosyalarla daha önce yayımlanan oturumlar karşılaştırıldı; aynı `(session_id, decision_id)` kayıtları tekilleştirildi.
+- Öğrencinin bildirdiğine göre 7 arkadaş katılımcıdan toplanan 66 anonim gerçek oturum, toplam 198 karar satırı. Katılımcı sayısı CSV'de tutulmadığı için bu sayı kullanıcı beyanıdır. Yeni dosyalarla daha önce yayımlanan oturumlar karşılaştırıldı; aynı `(session_id, decision_id)` kayıtları tekilleştirildi.
 - Her oturum `architecture`, `testing` ve `privacy` kararlarının üçünü de içeriyor.
 - Etiket dağılımı: güvenli seçim (`0`) 112; riskli seçim (`1`) 86.
 - Veri kümesi SHA-256: `60553a64d9fc4033edc8a25f513de973616f8bbcf5ae62c22ee7e61fbbcae458`.
