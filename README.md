@@ -64,7 +64,30 @@ Yayımlanan model, `public/model/release.json` içindeki tam Hugging Face commit
 
 - Sunucu ve eval betiği Node.js sözdizimi kontrolünden geçti; 20 eval girdisi JSON olarak doğrulandı.
 - AI Studio'da sentetik tutor sorusu gönderildi; Gemini `429 RESOURCE_EXHAUSTED` döndürdü, arayüz yedek yanıtı gösterdi ve yükleme durumu kapandı. 20 model yanıtı değerlendirmesi henüz yapılmadı.
-- `npm install` ve GitHub Pages taban yoluyla `npm run build` başarıyla tamamlandı. Cypress E2E: **15/15 geçti**. Çevrimdışı yedek tutor'ın 20 sentetik vakası **20/20 HTTP 200** döndürdü; elle değerlendirme raporu yukarıda. Gemini kotası yüzünden gerçek modelin 20 yanıtı ayrıca puanlanamadı. v2 veri kümesi 66 gerçek oturum ve 198 karar satırı içeriyor; eğitim betiği çalıştırıldı ve her iki eval eşiğinin altında kaldığı için ONNX modeli üretmedi. Sonuçlar [model kapısı raporunda](eval/model-gate-report.md).
+- `npm run build` başarıyla tamamlandı. Cypress E2E: **15/15 geçti**. Parite testi için JSON'da henüz referans vakası yok; E2E testi bu nedenle parite adımını beklemede bırakıyor, bunu gerçek ONNX parite kanıtı saymıyoruz.
+- Çevrimdışı yedek tutor'ın 20 sentetik vakası **20/20 HTTP 200** döndürdü; elle değerlendirme raporu yukarıda. Gemini kotası yüzünden gerçek modelin 20 yanıtı ayrıca puanlanamadı.
+- v2 veri kümesi 66 gerçek oturum ve 198 karar satırı içeriyor; eğitim betiği çalıştırıldı ve her iki eval eşiğinin altında kaldığı için ONNX modeli üretmedi. Sonuçlar [model kapısı raporunda](eval/model-gate-report.md).
+
+## Ödev yönergesiyle teslim durumu
+
+Bu depo şu an yönergedeki bütün puanlanabilir teslimleri tamamlamıyor; **100/100 uyum iddiası yoktur**. Eval kapısının doğru biçimde durdurduğu maddeler eksik kalmıştır.
+
+| Yönerge maddesi | Durum ve kanıt |
+|---|---|
+| Model hedefi, önceden sabitlenmiş eşik ve yeni kabul örnekleri | Tamamlandı: [spec.md](spec.md). |
+| Gerçek veri, anonimlik, `kaynak` ve veri sözlüğü | Tamamlandı: 66 gerçek oturum / 198 satır, [CSV](data/oturumlar.csv), [sözlük](data/SOZLUK.md). |
+| Tekrarlanabilir eğitim ve başarısız eval'de durma | Kod mevcut; çalıştırma kapıda durdu: balanced accuracy **0,525** (≥0,65 gerekli), riskli seçim recall **0,256** (≥0,70 gerekli). [Ayrıntılı rapor](eval/model-gate-report.md). |
+| `model.onnx`, `config.json` ve model kartı | Üretilmedi; başarısız adayı yayınlamamak için eğitim kapısı durdurdu. |
+| Hugging Face public repo ve commit'e sabitlenmiş model URL'si | Henüz yok; [RELEASE.md](RELEASE.md) yayın ve geri alma planını belgeliyor ama canlı model sürümü içermiyor. |
+| Uygulamada model çıkarımının oyunu değiştirmesi | Kod yolu hazır; `public/model/release.json` kapalı olduğu için yayımlanmış model davranışı şu anda etkin değil. |
+| Python ONNX Oracle ve 5 girdilik parite | Henüz tamamlanmadı: `tests/parite.json` ve `public/tests/parite.json` boş; model olmadığı için Oracle/parite çalıştırılamıyor. Cypress'teki bu madde beklemede kalıyor. |
+| Cypress regresyonu | Tamamlandı: **15/15 geçti**. Production build de başarılı. |
+| 60–90 sn, aynı sahnede iki oyuncunun farklı model davranışı videosu | Depoda herkese açık video veya video bağlantısı yok. |
+| Tek sayfalık sınav tasarımı, kaynaklar ve AI araç açıklaması | Tamamlandı: [SINAV_TASARIMI.md](SINAV_TASARIMI.md); README sonunda kaynaklar ve 4 maddelik AI/insan katkısı açıklaması var. |
+
+### Veri ve eğitim hattı denetimi
+
+Yeni dosyalar eklenirken aynı `(session_id, decision_id)` ile gelen 18 tekrar satırı bir kez sayıldı; çakışan tekrar kaydı bulunmadı. Karar kimliği ile sahne numarası eşleşmesinde ve önceki riskli karar sayısında tutarsızlık bulunmadı. Uygulama etiketi seçilen seçeneğin önceden tanımlı `option.risky` değerinden yazıyor; eğitim betiğinin sonucu bağımsız metrik hesabıyla aynı. Bu kontroller belirgin bir veri-kayıt/eval kodu hatası göstermedi; mevcut özellikler ve model reçetesi bu örneklemde hedefi yeterince öngöremiyor. Kişi kimliği tutulmadığından GroupKFold yalnızca oturumları ayırır; aynı katılımcının farklı oturumlarının farklı katlara düşmesini engelleyemez.
 
 ## Ürün kararları
 
